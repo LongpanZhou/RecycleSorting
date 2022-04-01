@@ -1,12 +1,11 @@
 from pprint import pp
-
+from matplotlib import pyplot as plt
 import numpy
 from rcplant import *
-import random
-import os
 import pandas as pd
 import numpy as np
-
+import random
+import os
 #checking functions
 
 #PVC has max index between 1250 and 1275 (Unique)
@@ -62,8 +61,46 @@ def import_excel(x):
     return raw_spectrum;
 
 #import data
-Data = [import_excel('HDPE'),import_excel('LDPE'),import_excel('PP'),import_excel('LDPE'),import_excel('PC'),import_excel('PVC'),import_excel('Polyester'),import_excel('PET'),import_excel('PU')
-]
+Data = [import_excel('HDPE'),import_excel('LDPE'),import_excel('PP'),import_excel('LDPE'),import_excel('PC'),import_excel('PVC'),import_excel('Polyester'),import_excel('PET'),import_excel('PU')]
+spectra_lst = []
+
+def plot_spectra():
+    plt.figure()
+
+    # retrieve 9 types of plastic and plot them seperately
+    for spectrum in spectra_lst:
+        plastic = spectrum.name
+        if plastic == Plastic.PET.value:
+            plt.subplot(331)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.HDPE.value:
+            plt.subplot(332)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.PVC.value:
+            plt.subplot(333)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.LDPE.value:
+            plt.subplot(334)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.PP.value:
+            plt.subplot(335)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.PS.value:
+            plt.subplot(336)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.Polyester.value:
+            plt.subplot(337)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.PC.value:
+            plt.subplot(338)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        elif plastic == Plastic.PU.value:
+            plt.subplot(339)
+            spectrum.plot(title= plastic, xlabel='Wavenumber', ylabel='Transmittance')
+        else:
+            pass
+            #spectrum.plot(title= 'Blank in testing 5Hz', xlabel='Wavenumber', ylabel='Transmittance')
+    plt.show()
 
 def user_sorting_function(sensors_output):
     sensor_id = 1
@@ -81,48 +118,63 @@ def user_sorting_function(sensors_output):
         min_diff = min(difference)
 
         if min_diff == difference[0]:
-            decision = {sensor_id: Plastic.PVC}
+            decision = {sensor_id: Plastic.HDPE}
+            spectrum.name = 'HDPE'
         elif min_diff == difference[1]:
             decision = {sensor_id: Plastic.LDPE}
+            spectrum.name = 'LDPE'
         elif min_diff == difference[2]:
             decision = {sensor_id: Plastic.PP}
+            spectrum.name = 'PP'
         elif min_diff == difference[3]:
             decision = {sensor_id: Plastic.PS}
+            spectrum.name = 'PS'
         elif min_diff == difference[4]:
             decision = {sensor_id: Plastic.PC}
+            spectrum.name = 'PC'
         elif min_diff == difference[5]:
             decision = {sensor_id: Plastic.PVC}
+            spectrum.name = 'PVC'
         elif min_diff == difference[6]:
             decision = {sensor_id: Plastic.Polyester}
+            spectrum.name = 'Polyester'
         elif min_diff == difference[7]:
             decision = {sensor_id: Plastic.PET}
+            spectrum.name = 'PET'
         elif min_diff == difference[8]:
             decision = {sensor_id: Plastic.PU}
+            spectrum.name = 'PU'
 
         if is_PS(spectrum):
             decision = {sensor_id: Plastic.PS}
-            return decision
+            spectrum.name = 'PS'
         elif is_PP_HPDE_LDPE(spectrum):
             spectrum_zoomin = spectrum.loc[1500:1250]
             if 1350 < spectrum_zoomin.idxmax() < 1450:
                 decision = {sensor_id: Plastic.PP}
+                spectrum.name = 'PP'
 
         #clear PVC and PET mixes
         if decision == {sensor_id: Plastic.PVC}:
             if spectrum.idxmax() > 1550:
                 decision = {sensor_id: Plastic.PET}
+                spectrum.name = 'PET'
 
         #Clear Polyester and PET mixes
         if decision == {sensor_id: Plastic.PET} or decision == {sensor_id: Plastic.Polyester}:
             spectrum_zoomin = spectrum.loc[3000:2750]
             if spectrum.idxmax() > 2500:
                 decision = {sensor_id: Plastic.HDPE}
+                spectrum.name = 'HDPE'
             elif spectrum_zoomin.max() > 0.1125:
                 decision = {sensor_id: Plastic.Polyester}
+                spectrum.name = 'Polyester'
             elif spectrum_zoomin.max() < 0.0225:
                 decision = {sensor_id: Plastic.PET}
-
+                spectrum.name = 'PET'
         #impossible to split LDPE and HDPE
+
+        spectra_lst.append(sensors_output[1]['spectrum'])
     return decision
 
 
@@ -163,6 +215,7 @@ def main():
 
     print(f'\n{num_containers} containers are processed in {elapsed_time:.2f} seconds')
 
+    plot_spectra()
 
 if __name__ == '__main__':
     main()
